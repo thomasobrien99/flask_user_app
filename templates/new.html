@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h1>New User Page</h1>
+  <form>
+  {{form.csrf_token}}
+  {{form.username}}
+  {{form.password}}
+  <input type = 'submit' value = 'Add a user!'>
+  </form>
+{% endblock %}
