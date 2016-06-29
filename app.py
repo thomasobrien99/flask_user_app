@@ -3,6 +3,7 @@ from forms import NewUserForm, LoginForm
 from flask_wtf import CsrfProtect
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from functools import wraps
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -28,10 +29,18 @@ class User(db.Model):
 
 ##########################
 
+def login_required(f):
+	@wraps(f)
+	def inner(*args, **kwargs):
+		if not(session.get("user_id")):
+			return redirect(url_for('login'))
+		return f(*args, **kwargs)
+	return inner
 
 
 @app.route('/')
 @app.route('/users')
+@login_required
 def index_user():
 	users = User.query.all()
 	return render_template('index.html', users=users)
