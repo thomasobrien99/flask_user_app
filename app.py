@@ -1,9 +1,11 @@
-from flask import Flask, render_template, url_for, redirect, flash
-from forms import NewUserForm
+from flask import Flask, render_template, url_for, redirect, flash, session
+from forms import NewUserForm, LoginForm
 from flask_wtf import CsrfProtect
-from flask_sqlalchemy import SQLAlchemy 
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
 
 app.config['SECRET_KEY'] = 'shhhh'
@@ -22,7 +24,7 @@ class User(db.Model):
 
 	def __init__(self, username, password):
 		self.username = username;
-		self.password = password;
+		self.password = bcrypt.generate_password_hash(password).decode('utf-8');
 
 ##########################
 
@@ -45,6 +47,20 @@ def create_user():
 def new_user():
 	form = NewUserForm()
 	return render_template('new.html', form=form)
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+	form = LoginForm()
+	if form.validate_on_submit():
+		found_user = User.query.filter_by(username=form.username.data).first()
+		if found_user:
+			is_authenticated = bcrypt.check_password_hash(found_user.password, form.password.data)
+			if is_authenticated:
+				session['user_id'] = found_user.id
+				flash("You Just Logged In!")
+				return redirect(url_for('index_user'))
+	return render_template('login.html', form = form);
+
 
 
 if(__name__ == '__main__'):
