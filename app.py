@@ -28,6 +28,8 @@ class User(db.Model):
 
 ##########################
 
+
+
 @app.route('/')
 @app.route('/users')
 def index_user():
@@ -61,6 +63,10 @@ def login():
 				return redirect(url_for('index_user'))
 	return render_template('login.html', form = form);
 
+@app.route('/logout')
+def logout():
+	session.pop('user_id', None)
+	return redirect(url_for('login'))
 
 
 if(__name__ == '__main__'):
